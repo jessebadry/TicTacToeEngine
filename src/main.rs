@@ -1,5 +1,4 @@
 mod ttt_engine;
-use std::io::Read;
 use ttt_engine::{TTTEngine, TTTError, TTTShape};
 fn game_over(engine: &TTTEngine) -> bool {
     let winner = engine.check_winner();
