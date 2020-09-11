@@ -92,7 +92,7 @@ impl TTTEngine {
         } else if self.board[y][x] != TTTShape::Blank {
             return Err(TTTError::ShapeAlreadyPlaced);
         }
-        //Set board at coordinates [x][y] to the shape of the current players turn
+        //Set board at coordinates [y][x] to the shape of the current players turn
         self.board[y][x] = *self.get_current_player().shape();
 
         self.current_player_turn = if self.current_player_turn == 1 { 0 } else { 1 };

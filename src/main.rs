@@ -61,7 +61,6 @@ fn main() -> Result<(), TTTError> {
     }
     let mut rematch = true;
     while rematch {
-        
         println!("{}", engine.board_to_string());
         while !game_over(&engine) {
             let current_player = engine.get_current_player();
@@ -73,10 +72,11 @@ fn main() -> Result<(), TTTError> {
             let x = parse_usize("Enter x coordinate", &engine);
             let y = parse_usize("Enter y coordinate", &engine);
             if let Err(err) = engine.next_turn(x, y) {
-                if let TTTError::IndexOutOfRange = err {
-                    println!("({},{}) is not a proper place on the board!", x, y);
-                } else if let TTTError::ShapeAlreadyPlaced = err {
-                    println!("({}, {}) is already taken!", x, y);
+                match err {
+                    TTTError::IndexOutOfRange => {
+                        println!("({},{}) is not a proper place on the board!", x, y)
+                    }
+                    TTTError::ShapeAlreadyPlaced => println!("({}, {}) is already taken!", x, y),
                 }
             }
             println!("{}", engine.board_to_string());
@@ -85,13 +85,31 @@ fn main() -> Result<(), TTTError> {
         let mut rematch_choice = String::new();
         while &rematch_choice != "y" && &rematch_choice != "n" {
             rematch_choice = input("Rematch? y/n").unwrap();
-            
         }
 
         rematch = rematch_choice == "y";
-        if rematch{
+        if rematch {
             engine.reset_game();
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::mem::{size_of, size_of_val};
+    use ttt_engine::Player;
+    #[test]
+    fn mem_sizes() {
+        let size = size_of::<TTTShape>();
+        println!("Shape size = {}", size);
+        let size = size_of_val(&Player::default());
+        println!("Default player size = {}", size);
+        let size = size_of::<Player>();
+        println!("Static player size = {}", size);
+        let engine = TTTEngine::new();
+        let size = size_of_val(&engine);
+        println!("Size of TTTEngine = {}", size);
+    }
 }
