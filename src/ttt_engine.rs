@@ -25,8 +25,8 @@ pub enum TTTShape {
     O = 1,
     Blank = 2,
 }
-impl TTTShape {
-    pub fn from_usize(num: usize) -> Self {
+impl From<usize> for TTTShape {
+    fn from(num: usize) -> Self {
         match num {
             0 => Self::X,
             1 => Self::O,
