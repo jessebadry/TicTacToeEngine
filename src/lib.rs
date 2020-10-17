@@ -7,13 +7,19 @@ impl Default for Player {
     }
 }
 impl Player {
-    pub fn name(&self) -> &String {
-        &self.1
-    }
     pub fn shape(&self) -> &TTTShape {
         &self.0
     }
+    pub fn name(&self) -> &String {
+        &self.1
+    }
 }
+impl std::fmt::Display for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}({})", self.name(), self.shape())
+    }
+}
+
 #[derive(Debug)]
 pub enum TTTError {
     IndexOutOfRange,
@@ -56,7 +62,6 @@ pub struct TTTEngine {
     players: [Player; 2],
     board: Vec<Vec<TTTShape>>,
 }
-
 impl TTTEngine {
     pub fn new() -> Self {
         TTTEngine {
@@ -162,35 +167,30 @@ impl TTTEngine {
         }
     }
     fn check_diagonal_rev(&self) -> Option<TTTShape> {
-        let temp = self.board[0][self.board.len() - 1];
-        if temp != TTTShape::Blank && {
+        let temp = &self.board[0][self.board.len() - 1];
+        if *temp != TTTShape::Blank && {
             let mut board = self.board.to_vec();
             board.reverse();
-            self.eq_diagonal(|shape| shape == temp, &board)
+            self.eq_diagonal(|shape| shape == *temp, &board)
         } {
-            Some(temp)
+            Some(temp.clone())
         } else {
             None
         }
     }
 
     pub fn check_winner(&self) -> Option<&Player> {
-        macro_rules! won {
-            ($func:tt) => {
-                if let Some(winner) = $func() {
-                    return Some(self.get_player_from_shape(&winner));
-                }
-            };
-        }
-        //Check row matching
-        won!((|| self.check_rows()));
-        //Check diagonally
-        won!((|| self.check_diagonal()));
-        won!((|| self.check_diagonal_rev()));
-        //Check columns
-        won!((|| self.check_columns()));
+        let winner = self
+            .check_rows()
+            .or_else(|| self.check_columns())
+            .or_else(|| self.check_diagonal())
+            .or_else(|| self.check_diagonal_rev());
 
-        None
+        if let Some(winner) = winner {
+            Some(self.get_player_from_shape(&winner))
+        } else {
+            None
+        }
     }
     pub fn add_player(&mut self, name: &str) -> Result<(), TTTError> {
         //if less than 2 we can increment to next enumeration.

@@ -1,12 +1,11 @@
-mod ttt_engine;
 use ttt_engine::{TTTEngine, TTTError, TTTShape};
 fn game_over(engine: &TTTEngine) -> bool {
     let winner = engine.check_winner();
     let over = if let Some(winner) = winner {
-        println!("the winner is {}({})", winner.name(), winner.shape());
+        println!("The winner is {}", winner);
         true
     } else if engine.complete() {
-        println!("it is a tie no winner!");
+        println!("It is a tie no winner!");
         true
     } else {
         false
@@ -21,9 +20,9 @@ fn input(msg: &str) -> std::io::Result<String> {
     Ok(s.replace("\r\n", ""))
 }
 
-fn parse_usize(msg: &str, engine: &TTTEngine) -> usize {
+fn input_coord(msg: &str, engine: &TTTEngine) -> usize {
     let board_len = engine.get_board().len();
-    let parse = || {
+    let parse = move || {
         input(msg)
             .unwrap()
             .parse::<usize>()
@@ -47,11 +46,11 @@ fn parse_usize(msg: &str, engine: &TTTEngine) -> usize {
 }
 fn main() -> Result<(), TTTError> {
     let mut engine = TTTEngine::new();
-    for i in 0..2 {
+    for i in TTTShape::X as usize..TTTShape::Blank as usize {
         let name = input(&format!(
             "Enter name for player{}({})",
             i + 1,
-            TTTShape::from_usize(i)
+            TTTShape::from(i)
         ))
         .unwrap_or_else(|why| {
             println!("Could not get name from stdin! Raw Err: {}", why);
@@ -64,13 +63,9 @@ fn main() -> Result<(), TTTError> {
         println!("{}", engine.board_to_string());
         while !game_over(&engine) {
             let current_player = engine.get_current_player();
-            println!(
-                "{}({})'s Turn!",
-                current_player.name(),
-                current_player.shape()
-            );
-            let x = parse_usize("Enter x coordinate", &engine);
-            let y = parse_usize("Enter y coordinate", &engine);
+            println!("{}'s Turn!", current_player);
+            let x = input_coord("Enter x coordinate", &engine);
+            let y = input_coord("Enter y coordinate", &engine);
             if let Err(err) = engine.next_turn(x, y) {
                 match err {
                     TTTError::IndexOutOfRange => {
